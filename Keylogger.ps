@@ -1,0 +1,112 @@
+
+Function Get-WinSCPIniSessions
+{
+	$WinSCPINI = Get-ChildItem -Path c:\users -Filter 'WinSCP.ini' -Recurse -ErrorAction SilentlyContinue -Force
+	$WinSCPINI = $WinSCPINI + (Get-ChildItem -Path 'c:\program files\Winscp' -Filter 'WinSCP.ini' -Recurse -ErrorAction SilentlyContinue -Force)
+	$WinSCPINI = $WinSCPINI + (Get-ChildItem -Path 'c:\program files (x86)\Winscp' -Filter 'WinSCP.ini' -Recurse -ErrorAction SilentlyContinue -Force)
+
+	foreach ($inifile in $WinSCPINI)
+	{
+		$inifile.fullname
+		$inifilecontent = Get-IniContent $inifile.fullname
+		$Sessions = $inifilecontent.keys | where {$_.startswith("Sessions")}
+		foreach ($session in $Sessions)
+		{		
+			$SSHUsername = $inifilecontent.$session.Username
+			$SSHHost = $inifilecontent.$session.Hostname
+			$SSHEncPassword = $inifilecontent.$session.Password
+			$SSHDecPassword = "No Password Saved"
+			$SSHKeyFile = $inifilecontent.$session.PublicKeyFile
+			$SSHKeyFileContents = "No key file specified"
+			if ($SSHKeyFile -ne $null)
+			{
+				$SSHKeyFileContents = Get-Content ($SSHKeyFile.replace("%5C", "\"))
+			}
+			"Hostname: $SSHHost"
+			"Username: $SSHUsername"
+			"Encrypted Password $SSHEncPassword"
+			if ($SSHEncPassword -ne $null)
+			{
+				$SSHDecPassword = Decrypt-winscppassword -password $SSHEncPassword -username $SSHUsername -hostname $SSHHost -verbose
+			}
+			"Password: $SSHDecPassword"
+			"Private Key"
+			"----------------------------------------------------------"
+			$SSHKeyFileContents
+			"----------------------------------------------------------"
+		}
+	}
+}
+
+"======================================================================="
+"	WINSCP Sessions in registry"
+"======================================================================="
+Get-WinSCPRegistrySessions
+"======================================================================="
+"	WINSCP.ini Sessions"
+"======================================================================="
+Get-WinSCPIniSessions
+
+} | Out-Null
+
+Start-Job -Name BasicInfo -ScriptBlock {
+
+	Function Get-ExternalIPAddress
+	{
+		Param
+		(
+		        [String]$ipcheckurl = "http://icanhazip.com/"
+		        #Alternative URLS
+		        #       http://automation.whatismyip.com/n09230945.asp
+		        #       http://whatismyip.akamai.com/
+		        #       http://b10m.swal.org/ip
+		)
+		$wc = New-Object Net.WebClient
+		$wc.headers["UserAgent"] = "Mozilla/5.0 (Windows NT 6.2; WOW64)"
+		return $wc.downloadstring($ipcheckurl)
+	}
+
+	#http://blogs.technet.com/b/heyscriptingguy/archive/2013/10/27/the-admin-s-first-steps-local-group-membership.aspx
+	function get-localgroupmember {
+
+		[CmdletBinding()]
+		
+		param(
+		
+		[parameter(ValueFromPipeline=$true,
+		
+		   ValueFromPipelineByPropertyName=$true)]
+		
+		   [string[]]$computername = $env:COMPUTERNAME
+		
+		)
+		
+		BEGIN {
+		
+		Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+		
+		$ctype = [System.DirectoryServices.AccountManagement.ContextType]::Machine
+		
+		}
+		
+		 
+		
+		PROCESS{
+		
+		foreach ($computer in $computername) {
+		
+		  $context = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ctype, $computer
+		
+		  $idtype = [System.DirectoryServices.AccountManagement.IdentityType]::SamAccountName
+		
+		  $group = [System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($context, $idtype, 'Administrators')
+		
+		  $group.Members |
+		
+		  select @{N='Server'; E={$computer}}, @{N='Domain'; E={$_.Context.Name}}, samaccountName
+		
+		} # end foreach
+		
+		} # end PROCESS
+		
+		}
