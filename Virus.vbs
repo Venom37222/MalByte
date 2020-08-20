@@ -1,3 +1,4 @@
+
 set ws=createobject("wscript.shell")
 dim strDir,strfile,st,strtxt2,strshell,strlog
 dim obfso,obfolder,obshell,obfile,obtxtfile
